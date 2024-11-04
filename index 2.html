@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Caesars Palace - Blackjack</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #121212;
+            color: #d4af37;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+        header {
+            background-color: #d4af37;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+        }
+        h1 {
+            margin: 0;
+            font-size: 2.5em;
+        }
+        button {
+            background-color: #d4af37;
+            border: none;
+            color: black;
+            padding: 10px 20px;
+            margin: 20px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 1.2em;
+        }
+    </style>
+    <script>
+        function openBlackjack() {
+            const gameWindow = window.open('', '_blank', 'width=600,height=400');
+            gameWindow.document.write(`
+                <!DOCTYPE html>
+                <html lang="de">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>Blackjack Spiel</title>
+                    <style>
+                        body {
+                            font-family: 'Arial', sans-serif;
+                            background-color: #121212;
+                            color: #d4af37;
+                            margin: 0;
+                            padding: 0;
+                            line-height: 1.6;
+                            text-align: center;
+                        }
+                        .game-container {
+                            margin: 20px auto;
+                        }
+                        button {
+                            background-color: #d4af37;
+                            border: none;
+                            color: black;
+                            padding: 10px 20px;
+                            margin: 5px;
+                            cursor: pointer;
+                            border-radius: 5px;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="game-container">
+                        <h2>Willkommen beim Blackjack!</h2>
+                        <div id="game"></div>
+                        <button id="hit">Zieh Karte</button>
+                        <button id="stand">Stehenbleiben</button>
+                        <div id="message"></div>
+                    </div>
+                    <script>
+                        let playerHand = [];
+                        let dealerHand = [];
+                        let deck = [];
+                        
+                        function createDeck() {
+                            const suits = ['Kreuz', 'Pik', 'Herz', 'Karo'];
+                            const values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'Bube', 'Dame', 'König', 'Ass'];
+                            for (let suit of suits) {
+                                for (let value of values) {
+                                    deck.push({ value: value, suit: suit });
+                                }
+                            }
+                        }
+
+                        function shuffleDeck() {
+                            for (let i = deck.length - 1; i > 0; i--) {
+                                const j = Math.floor(Math.random() * (i + 1));
+                                [deck[i], deck[j]] = [deck[j], deck[i]];
+                            }
+                        }
+
+                        function dealCard() {
+                            return deck.pop();
+                        }
+
+                        function startGame() {
+                            createDeck();
+                            shuffleDeck();
+                            playerHand = [dealCard(), dealCard()];
+                            dealerHand = [dealCard(), dealCard()];
+                            updateGameDisplay();
+                        }
+
+                        function updateGameDisplay() {
+                            document.getElementById('game').innerHTML = \`
+                                <p>Spieler Hand: \${getHandValue(playerHand)} (Karten: \${playerHand.map(card => card.value + ' ' + card.suit).join(', ')})</p>
+                                <p>Dealer Hand: \${getHandValue(dealerHand)} (Karten: \${dealerHand[0].value + ' ' + dealerHand[0].suit}, ?)</p>
+                            `;
+                        }
+
+                        function getHandValue(hand) {
+                            let value = 0;
+                            let aces = 0;
+                            for (let card of hand) {
+                                if (['Bube', 'Dame', 'König'].includes(card.value)) {
+                                    value += 10;
+                                } else if (card.value === 'Ass') {
+                                    value += 11;
+                                    aces++;
+                                } else {
+                                    value += parseInt(card.value);
+                                }
+                            }
+                            while (value > 21 && aces > 0) {
+                                value -= 10;
+                                aces--;
+                            }
+                            return value;
+                        }
+
+                        document.getElementById('hit').addEventListener('click', () => {
+                            playerHand.push(dealCard());
+                            const playerValue = getHandValue(playerHand);
+                            if (playerValue > 21) {
+                                document.getElementById('message').innerText = 'Du hast über 21 Punkte! Du verlierst!';
+                            }
+                            updateGameDisplay();
+                        });
+
+                        document.getElementById('stand').addEventListener('click', () => {
+                            while (getHandValue(dealerHand) < 17) {
+                                dealerHand.push(dealCard());
+                            }
+                            const playerValue = getHandValue(playerHand);
+                            const dealerValue = getHandValue(dealerHand);
+                            let result;
+                            if (dealerValue > 21 || playerValue > dealerValue) {
+                                result = 'Du gewinnst!';
+                            } else if (playerValue < dealerValue) {
+                                result = 'Dealer gewinnt!';
+                            } else {
+                                result = 'Unentschieden!';
+                            }
+                            document.getElementById('message').innerText = result;
+                            updateGameDisplay();
+                        });
+                        
+                        startGame();
+                    </script>
+                </body>
+                </html>
+            `);
+        }
+    </script>
+</head>
+<body>
+    <header>
+        <h1>Willkommen im Caesars Palace</h1>
+    </header>
+    <button onclick="openBlackjack()">Blackjack spielen</button>
+</body>
+</html>
